@@ -1,0 +1,171 @@
+# Week 8 — Python APIs & Automated Data Pipeline
+
+## Overview
+
+This week focused on turning a manual analytics workflow into a reusable Python pipeline.
+
+The pipeline:
+
+1. Fetches data from Supabase through the API
+2. Cleans and transforms the data with pandas
+3. Calculates weekly aggregates and KPIs
+4. Creates Plotly outputs
+5. Exports results to CSV and HTML
+6. Runs the complete workflow with a single command
+
+Our team decided that each member would complete all four main roles independently in order to practise the full workflow rather than only one module.
+
+Therefore, my Week 8 artefact includes:
+
+- **Role A — API Query:** `data_fetcher.py`
+- **Role B — Data Processing:** `transform.py`
+- **Role C — Visualization + Saving:** `visualize_export.py`
+- **Role D — Automation Script:** `pipeline.py`
+
+## Project structure
+
+```text
+week-8/
+├── data_fetcher.py
+├── transform.py
+├── visualize_export.py
+├── pipeline.py
+├── .env.example
+├── README.md
+└── output/
+    ├── results_20261013.csv
+    ├── weekly_revenue.html
+    └── kpi_summary.html
+```
+
+## Pipeline architecture
+
+```text
+Supabase API
+    ↓
+Extract
+    ↓
+Clean & Transform
+    ↓
+Calculate KPIs & Weekly Aggregates
+    ↓
+Validate
+    ↓
+Visualize
+    ↓
+Export CSV / HTML
+```
+
+## Role A — API Query
+
+`data_fetcher.py` contains reusable functions for fetching data from Supabase:
+
+- `fetch_sales(start_date, end_date)`
+- `fetch_customers()`
+- `fetch_products()`
+
+The functions return pandas DataFrames and include error handling.
+
+The sales function accepts a date range so the pipeline can retrieve only the required period rather than loading the complete sales history every time.
+
+## Role B — Data Processing
+
+`transform.py` contains functions for:
+
+- cleaning sales data
+- removing duplicates
+- handling critical NULL values
+- converting dates
+- calculating weekly aggregates
+- calculating KPIs
+- merging sales and customer data
+
+The weekly output includes:
+
+- revenue
+- number of orders
+- average order value
+
+The KPI function calculates:
+
+- total revenue
+- unique customers
+- average order value
+
+## Role C — Visualization & Export
+
+`visualize_export.py` creates:
+
+- a weekly revenue chart
+- a KPI summary
+- a timestamped CSV export
+
+The outputs are saved into the `output/` folder.
+
+## Role D — Automation
+
+`pipeline.py` connects all modules into one end-to-end workflow.
+
+The pipeline contains separate stages for:
+
+- Extract
+- Transform
+- Validation
+- Visualization / Export
+
+Logging is used to show the progress of each stage and to report errors.
+
+## Validation
+
+The pipeline performs several reconciliation checks before exporting results:
+
+- cleaned sales must not be empty
+- merging customers must not change the number of sales rows
+- the sum of weekly orders must equal the number of cleaned sales rows
+
+These checks help prevent the pipeline from silently producing inconsistent results.
+
+## Current run
+
+For the 2024 sales period:
+
+- **5,137 sales rows fetched**
+- **4,643 rows remained after cleaning**
+- **4,643 rows remained after the customer merge**
+- weekly order totals reconciled to the cleaned sales dataset
+- the pipeline completed in approximately **0.70 seconds**
+
+## Outputs
+
+The pipeline produces:
+
+```text
+output/
+├── results_YYYYMMDD.csv
+├── weekly_revenue.html
+└── kpi_summary.html
+```
+
+The HTML files contain interactive Plotly visualizations.
+
+## Security
+
+API credentials are stored locally in `.env` and are not committed to GitHub.
+
+## Business context
+
+The original scenario describes a recurring analytics process that takes several hours when performed manually.
+
+The automated pipeline completes the technical workflow in under a second in the current test run, excluding human review.
+
+A logical next step would be scheduling the pipeline and automatically delivering KPI summaries or alerts when important metrics move outside expected ranges.
+
+If Supabase is unavailable, the current pipeline reports the failure rather than silently producing incomplete results. A future production improvement would be retry logic and a fallback to the latest validated local dataset.
+
+## AI use
+
+I used ChatGPT as a learning and debugging assistant while building the pipeline.
+
+AI helped me understand Python functions and modules, API error handling, pipeline orchestration, validation with `assert`, logging, and debugging integration issues between the different stages.
+
+I tested the modules, reviewed the outputs, and made the implementation and analytical decisions myself.
